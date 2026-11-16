@@ -1306,7 +1306,7 @@ body[data-alarm="true"] #nav-timer-btn .nav-timer-badge {
   color: var(--danger);
 }
 
-/* === Scratchpad & Checklist === */
+/* === Notepad & Checklist === */
 .bento-eval-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1341,7 +1341,7 @@ body[data-alarm="true"] #nav-timer-btn .nav-timer-badge {
   }
 }
 
-.scratchpad-tabs-wrap {
+.notepad-tabs-wrap {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1349,7 +1349,7 @@ body[data-alarm="true"] #nav-timer-btn .nav-timer-badge {
   min-width: 0;
 }
 
-.scratchpad-segmented {
+.notepad-segmented {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1363,7 +1363,7 @@ body[data-alarm="true"] #nav-timer-btn .nav-timer-badge {
   min-width: 0;
 }
 
-.scratchpad-segmented::-webkit-scrollbar {
+.notepad-segmented::-webkit-scrollbar {
   display: none;
 }
 
@@ -1467,7 +1467,7 @@ body[data-alarm="true"] #nav-timer-btn .nav-timer-badge {
   font-size: max(12px, 0.75rem);
 }
 
-.scratchpad-textarea {
+.notepad-textarea {
   width: 100%;
   flex: 1;
   min-height: 180px;
@@ -1485,11 +1485,11 @@ body[data-alarm="true"] #nav-timer-btn .nav-timer-badge {
   transition: border-color 0.15s;
 }
 
-.scratchpad-textarea:focus {
+.notepad-textarea:focus {
   border-color: var(--border-accent);
 }
 
-.scratchpad-textarea::placeholder {
+.notepad-textarea::placeholder {
   color: var(--text-muted);
 }
 

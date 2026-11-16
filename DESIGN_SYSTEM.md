@@ -35,7 +35,7 @@ Defined in `styles.css` (`:root`) and applied across the entire interface.
 ### Dynamic States (`data-online`, `data-alarm`, `data-zen`)
 - `body[data-online="false"]`: switches `--accent` to `--danger` and displays `SYS // OFFLINE` in the topbar.
 - `body[data-alarm="true"]`: scopes `--danger` to `#timer-page-view` and `#nav-timer-btn` with a border pulse (respecting `prefers-reduced-motion: reduce`).
-- `body[data-zen="true"]`: hides the topbar, directory, scratchpad/checklist, and footer, centering the ASCII clock (`.zen-ascii-clock`) and command panel.
+- `body[data-zen="true"]`: hides the topbar, directory, notepad/checklist, and footer, centering the ASCII clock (`.zen-ascii-clock`) and command panel.
 
 ### Geometry & Spacing
 - **Border Radius (`--radius`):** `2px` (sharp/industrial corners across panels, cards, buttons, inputs, and badges).
@@ -68,8 +68,8 @@ The project uses **Mode A — Modern TUI (`btop` / Neovim)** as the active defau
   - `❯` prompt prefix, borderless monospace input (`role="combobox"`), suggestions (`:` internal commands / `@` bookmark filter), feedback (`aria-live="polite"`), and `.kbd` indicator (`CTRL+K`).
 - **Workspace Directory (`.bookmarks-grid` / `.bookmark-card`):**
   - Unified category-tab organization with numbered cards (`1–9` keyboard shortcuts), title, hostname, and inline editing with drag-and-drop reordering.
-- **Scratchpad & Checklist (`.bento-eval-grid`):**
-  - 2-column grid below the directory: `[ 03. SCRATCHPAD ]` (multi-tab `.scratchpad-segmented` notes, double-click rename, `COPY`, `CLEAR`, and `Ctrl+Z` snapshot undo) and `[ 04. CHECKLIST ]` (`[ ]` / `[✓]` tasks with `CLEAR DONE`), both persisted in `localStorage`.
+- **Notepad & Checklist (`.bento-eval-grid`):**
+  - 2-column grid below the directory: `[ 03. NOTEPAD ]` (multi-tab `.notepad-segmented` notes, double-click rename, `COPY`, `CLEAR`, and `Ctrl+Z` snapshot undo) and `[ 04. CHECKLIST ]` (`[ ]` / `[✓]` tasks with `CLEAR DONE`), both persisted in `localStorage`.
 - **Focus Timer (`#timer-page-view`):**
   - Dedicated view with `Countdown Timer` / `Stopwatch` toggle, presets (`25m`–`120m` + custom), Web Audio API alarm, and `.btn-accent` / `.btn-ghost` controls.
 - **Settings Modal (`#settings-modal`):**

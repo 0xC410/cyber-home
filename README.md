@@ -1,6 +1,6 @@
 # cyber-home
 
-Minimal TUI-inspired startpage (`SYS // HOME`) with command bar, bookmarks, scratchpad, checklist, and focus timer.
+Minimal TUI-inspired startpage (`SYS // HOME`) with command bar, bookmarks, notepad, checklist, and focus timer.
 
 ![cyber-home Home view](assets/home.png)
 
@@ -27,7 +27,7 @@ Minimal TUI-inspired startpage (`SYS // HOME`) with command bar, bookmarks, scra
 
 - **Command bar (`/` or `Ctrl+K`):** search prefixes (`g`, `gh`, `yt`, `ddg`, `cve`, `ht`, `crt`, `shodan`), `@` bookmark filter, and `:commands` (`:help`, `:zen`, `:timer`, `:theme`, `:font`, `:todo`, `:config`, `:export`).
 - **Directory:** tabbed categories, `1–9` quick-open shortcuts, inline edit & drag-and-drop reorder.
-- **Scratchpad & Checklist:** multi-tab notes (`Ctrl+Z` undo on clear) and persistent task checklist.
+- **Notepad & Checklist:** multi-tab notes (`Ctrl+Z` undo on clear) and persistent task checklist.
 - **Themes & Scales:** `green`, `amber`, `cyan`, `violet` · `14px` / `16px` / `18px`.
 
 ## License

@@ -22,12 +22,12 @@ const DEFAULT_CONFIG = {
   weatherCity: "",
   timerDefaultMinutes: 45,
   categories: DEFAULT_CATEGORIES,
-  scratchpad: "",
-  scratchpads: [
+  notepad: "",
+  notepads: [
     { name: "Note 1", text: "" },
     { name: "Note 2", text: "" }
   ],
-  activeScratchpadSlot: 0,
+  activeNotepadSlot: 0,
   checklist: []
 };
 
@@ -76,24 +76,33 @@ function normalizeConfig(parsed) {
     categories[0].protected = true;
   }
 
-  const legacyScratchpad = typeof parsed.scratchpad === "string" ? parsed.scratchpad : "";
-  const scratchpads =
-    Array.isArray(parsed.scratchpads) && parsed.scratchpads.length > 0
-      ? parsed.scratchpads.map((s, idx) =>
-          typeof s === "string"
-            ? { name: `Note ${idx + 1}`, text: s }
-            : { name: String(s?.name || `Note ${idx + 1}`).trim() || `Note ${idx + 1}`, text: typeof s?.text === "string" ? s.text : "" }
-        )
-      : [
-          { name: "Note 1", text: legacyScratchpad },
-          { name: "Note 2", text: "" }
-        ];
-  const activeScratchpadSlot =
-    Number.isInteger(parsed.activeScratchpadSlot) &&
-    parsed.activeScratchpadSlot >= 0 &&
-    parsed.activeScratchpadSlot < scratchpads.length
-      ? parsed.activeScratchpadSlot
-      : 0;
+  const legacyNotepad =
+    typeof parsed.notepad === "string"
+      ? parsed.notepad
+      : typeof parsed.scratchpad === "string"
+        ? parsed.scratchpad
+        : "";
+  const rawNotepads =
+    Array.isArray(parsed.notepads) && parsed.notepads.length > 0
+      ? parsed.notepads
+      : Array.isArray(parsed.scratchpads) && parsed.scratchpads.length > 0
+        ? parsed.scratchpads
+        : null;
+  const notepads = rawNotepads
+    ? rawNotepads.map((s, idx) =>
+        typeof s === "string"
+          ? { name: `Note ${idx + 1}`, text: s }
+          : { name: String(s?.name || `Note ${idx + 1}`).trim() || `Note ${idx + 1}`, text: typeof s?.text === "string" ? s.text : "" }
+      )
+    : [
+        { name: "Note 1", text: legacyNotepad },
+        { name: "Note 2", text: "" }
+      ];
+  const rawSlot = Number.isInteger(parsed.activeNotepadSlot)
+    ? parsed.activeNotepadSlot
+    : parsed.activeScratchpadSlot;
+  const activeNotepadSlot =
+    Number.isInteger(rawSlot) && rawSlot >= 0 && rawSlot < notepads.length ? rawSlot : 0;
 
   return {
     ...structuredClone(DEFAULT_CONFIG),
@@ -103,9 +112,9 @@ function normalizeConfig(parsed) {
     weatherMode: parsed.weatherMode === "city" ? "city" : "auto",
     weatherCity: typeof parsed.weatherCity === "string" ? parsed.weatherCity : "",
     categories,
-    scratchpad: scratchpads[0]?.text || "",
-    scratchpads,
-    activeScratchpadSlot,
+    notepad: notepads[0]?.text || "",
+    notepads,
+    activeNotepadSlot,
     checklist: Array.isArray(parsed.checklist)
       ? parsed.checklist
           .filter((t) => t && typeof t.text === "string")
@@ -779,7 +788,7 @@ function renderAll() {
   applyAppearance();
   renderLinksArea();
   renderTimer();
-  renderScratchpad();
+  renderNotepad();
   renderChecklist();
 }
 
@@ -1663,288 +1672,288 @@ document.addEventListener("keydown", (e) => {
   nextTab.click();
 });
 
-/* === Scratchpad & Checklist (Persisted in config) === */
-const scratchpadInputEl = document.getElementById("scratchpad-input");
-const scratchpadSlotsEl = document.getElementById("scratchpad-slots");
-const scratchpadAddBtn = document.getElementById("scratchpad-add-btn");
-const scratchpadCopyBtn = document.getElementById("scratchpad-copy-btn");
-const scratchpadClearBtn = document.getElementById("scratchpad-clear-btn");
+/* === Notepad & Checklist (Persisted in config) === */
+const notepadInputEl = document.getElementById("notepad-input");
+const notepadSlotsEl = document.getElementById("notepad-slots");
+const notepadAddBtn = document.getElementById("notepad-add-btn");
+const notepadCopyBtn = document.getElementById("notepad-copy-btn");
+const notepadClearBtn = document.getElementById("notepad-clear-btn");
 
-let scratchpadInlineRenameIdx = -1;
-let scratchpadRenameOriginalName = "";
-const scratchpadUndoStack = [];
-let scratchpadCanUndoSnapshot = false;
+let notepadInlineRenameIdx = -1;
+let notepadRenameOriginalName = "";
+const notepadUndoStack = [];
+let notepadCanUndoSnapshot = false;
 
-function pushScratchpadUndo() {
-  ensureScratchpadSlots();
-  scratchpadUndoStack.push({
-    scratchpads: structuredClone(config.scratchpads),
-    activeScratchpadSlot: config.activeScratchpadSlot
+function pushNotepadUndo() {
+  ensureNotepadSlots();
+  notepadUndoStack.push({
+    notepads: structuredClone(config.notepads),
+    activeNotepadSlot: config.activeNotepadSlot
   });
-  if (scratchpadUndoStack.length > 20) scratchpadUndoStack.shift();
-  scratchpadCanUndoSnapshot = true;
+  if (notepadUndoStack.length > 20) notepadUndoStack.shift();
+  notepadCanUndoSnapshot = true;
 }
 
-function undoScratchpadSnapshot() {
-  if (scratchpadUndoStack.length === 0) return false;
-  const snap = scratchpadUndoStack.pop();
-  config.scratchpads = snap.scratchpads;
-  config.activeScratchpadSlot = snap.activeScratchpadSlot;
-  config.scratchpad = config.scratchpads[0]?.text || "";
-  scratchpadCanUndoSnapshot = scratchpadUndoStack.length > 0;
+function undoNotepadSnapshot() {
+  if (notepadUndoStack.length === 0) return false;
+  const snap = notepadUndoStack.pop();
+  config.notepads = snap.notepads;
+  config.activeNotepadSlot = snap.activeNotepadSlot;
+  config.notepad = config.notepads[0]?.text || "";
+  notepadCanUndoSnapshot = notepadUndoStack.length > 0;
   saveConfig();
-  renderScratchpad(true);
-  scratchpadInputEl?.focus();
+  renderNotepad(true);
+  notepadInputEl?.focus();
   return true;
 }
 
-function ensureScratchpadSlots() {
-  if (!Array.isArray(config.scratchpads) || config.scratchpads.length === 0) {
-    config.scratchpads = [
-      { name: "Note 1", text: typeof config.scratchpad === "string" ? config.scratchpad : "" },
+function ensureNotepadSlots() {
+  if (!Array.isArray(config.notepads) || config.notepads.length === 0) {
+    config.notepads = [
+      { name: "Note 1", text: typeof config.notepad === "string" ? config.notepad : "" },
       { name: "Note 2", text: "" }
     ];
   } else {
-    config.scratchpads = config.scratchpads.map((s, idx) =>
+    config.notepads = config.notepads.map((s, idx) =>
       typeof s === "string"
         ? { name: `Note ${idx + 1}`, text: s }
         : { name: String(s?.name || `Note ${idx + 1}`).trim() || `Note ${idx + 1}`, text: typeof s?.text === "string" ? s.text : "" }
     );
   }
   if (
-    !Number.isInteger(config.activeScratchpadSlot) ||
-    config.activeScratchpadSlot < 0 ||
-    config.activeScratchpadSlot >= config.scratchpads.length
+    !Number.isInteger(config.activeNotepadSlot) ||
+    config.activeNotepadSlot < 0 ||
+    config.activeNotepadSlot >= config.notepads.length
   ) {
-    config.activeScratchpadSlot = 0;
+    config.activeNotepadSlot = 0;
   }
 }
 
-function deleteScratchpadAt(idx) {
-  ensureScratchpadSlots();
-  if (config.scratchpads.length <= 1) return;
-  if (!Number.isInteger(idx) || idx < 0 || idx >= config.scratchpads.length) return;
-  pushScratchpadUndo();
-  config.scratchpads.splice(idx, 1);
-  if (config.activeScratchpadSlot >= config.scratchpads.length) {
-    config.activeScratchpadSlot = config.scratchpads.length - 1;
-  } else if (idx < config.activeScratchpadSlot) {
-    config.activeScratchpadSlot -= 1;
+function deleteNotepadAt(idx) {
+  ensureNotepadSlots();
+  if (config.notepads.length <= 1) return;
+  if (!Number.isInteger(idx) || idx < 0 || idx >= config.notepads.length) return;
+  pushNotepadUndo();
+  config.notepads.splice(idx, 1);
+  if (config.activeNotepadSlot >= config.notepads.length) {
+    config.activeNotepadSlot = config.notepads.length - 1;
+  } else if (idx < config.activeNotepadSlot) {
+    config.activeNotepadSlot -= 1;
   }
-  config.scratchpad = config.scratchpads[0]?.text || "";
+  config.notepad = config.notepads[0]?.text || "";
   saveConfig();
-  renderScratchpad(true);
-  scratchpadInputEl?.focus();
+  renderNotepad(true);
+  notepadInputEl?.focus();
 }
 
-function renderScratchpad(scrollActiveIntoView = false) {
-  if (!scratchpadInputEl) return;
-  ensureScratchpadSlots();
-  const activeIdx = config.activeScratchpadSlot;
-  const activeNote = config.scratchpads[activeIdx];
+function renderNotepad(scrollActiveIntoView = false) {
+  if (!notepadInputEl) return;
+  ensureNotepadSlots();
+  const activeIdx = config.activeNotepadSlot;
+  const activeNote = config.notepads[activeIdx];
   const activeText = activeNote?.text || "";
-  if (scratchpadInputEl.value !== activeText) {
-    scratchpadInputEl.value = activeText;
+  if (notepadInputEl.value !== activeText) {
+    notepadInputEl.value = activeText;
   }
-  if (scratchpadSlotsEl) {
-    const canDelete = config.scratchpads.length > 1;
-    scratchpadSlotsEl.innerHTML = config.scratchpads
+  if (notepadSlotsEl) {
+    const canDelete = config.notepads.length > 1;
+    notepadSlotsEl.innerHTML = config.notepads
       .map((note, idx) => {
         const isActive = idx === activeIdx;
         const hasContent = Boolean(note.text && note.text.trim());
 
-        if (scratchpadInlineRenameIdx === idx) {
-          return `<div class="slot-tab active" role="presentation"><input class="slot-rename-input mono" data-scratchpad-rename="${idx}" type="text" maxlength="20" autocomplete="off" value="${escapeHtml(note.name)}" aria-label="Rename note ${idx + 1}" /></div>`;
+        if (notepadInlineRenameIdx === idx) {
+          return `<div class="slot-tab active" role="presentation"><input class="slot-rename-input mono" data-notepad-rename="${idx}" type="text" maxlength="20" autocomplete="off" value="${escapeHtml(note.name)}" aria-label="Rename note ${idx + 1}" /></div>`;
         }
 
         return `
           <div class="slot-tab${isActive ? " active" : ""}${hasContent ? " has-content" : ""}" data-slot-tab="${idx}" role="presentation">
-            <button class="slot-btn" data-scratchpad-slot="${idx}" type="button" role="tab" aria-selected="${isActive}" title="Double-click to rename">${escapeHtml(note.name)}</button>
-            ${canDelete ? `<button class="slot-close-btn" data-scratchpad-del="${idx}" type="button" title="Close ${escapeHtml(note.name)}" aria-label="Close ${escapeHtml(note.name)}">×</button>` : ""}
+            <button class="slot-btn" data-notepad-slot="${idx}" type="button" role="tab" aria-selected="${isActive}" title="Double-click to rename">${escapeHtml(note.name)}</button>
+            ${canDelete ? `<button class="slot-close-btn" data-notepad-del="${idx}" type="button" title="Close ${escapeHtml(note.name)}" aria-label="Close ${escapeHtml(note.name)}">×</button>` : ""}
           </div>
         `;
       })
       .join("");
 
     if (scrollActiveIntoView) {
-      const target = scratchpadSlotsEl.querySelector(`[data-slot-tab="${activeIdx}"]`);
+      const target = notepadSlotsEl.querySelector(`[data-slot-tab="${activeIdx}"]`);
       target?.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
   }
 }
 
-scratchpadSlotsEl?.addEventListener("click", (e) => {
-  const delBtn = e.target.closest("[data-scratchpad-del]");
+notepadSlotsEl?.addEventListener("click", (e) => {
+  const delBtn = e.target.closest("[data-notepad-del]");
   if (delBtn) {
-    deleteScratchpadAt(Number(delBtn.dataset.scratchpadDel));
+    deleteNotepadAt(Number(delBtn.dataset.notepadDel));
     return;
   }
 
-  const btn = e.target.closest("[data-scratchpad-slot]");
+  const btn = e.target.closest("[data-notepad-slot]");
   if (!btn) return;
-  const idx = Number(btn.dataset.scratchpadSlot);
-  if (!Number.isInteger(idx) || idx < 0 || idx >= config.scratchpads.length) return;
-  if (idx === config.activeScratchpadSlot) return;
+  const idx = Number(btn.dataset.notepadSlot);
+  if (!Number.isInteger(idx) || idx < 0 || idx >= config.notepads.length) return;
+  if (idx === config.activeNotepadSlot) return;
 
-  config.activeScratchpadSlot = idx;
+  config.activeNotepadSlot = idx;
   saveConfig();
 
   // Toggle active state in-place so DOM nodes stay intact for dblclick
-  scratchpadSlotsEl.querySelectorAll("[data-slot-tab]").forEach((tabEl) => {
+  notepadSlotsEl.querySelectorAll("[data-slot-tab]").forEach((tabEl) => {
     const tabIdx = Number(tabEl.dataset.slotTab);
     const isAct = tabIdx === idx;
     tabEl.classList.toggle("active", isAct);
-    tabEl.querySelector("[data-scratchpad-slot]")?.setAttribute("aria-selected", String(isAct));
+    tabEl.querySelector("[data-notepad-slot]")?.setAttribute("aria-selected", String(isAct));
   });
-  if (scratchpadInputEl) {
-    scratchpadInputEl.value = config.scratchpads[idx]?.text || "";
+  if (notepadInputEl) {
+    notepadInputEl.value = config.notepads[idx]?.text || "";
   }
   btn.closest("[data-slot-tab]")?.scrollIntoView({ block: "nearest", inline: "nearest" });
 });
 
-scratchpadSlotsEl?.addEventListener("mousedown", (e) => {
+notepadSlotsEl?.addEventListener("mousedown", (e) => {
   if (e.button !== 1) return;
   if (e.target.closest("[data-slot-tab]")) {
     e.preventDefault();
   }
 });
 
-scratchpadSlotsEl?.addEventListener("auxclick", (e) => {
+notepadSlotsEl?.addEventListener("auxclick", (e) => {
   if (e.button !== 1) return;
   const tab = e.target.closest("[data-slot-tab]");
   if (!tab) return;
   e.preventDefault();
-  deleteScratchpadAt(Number(tab.dataset.slotTab));
+  deleteNotepadAt(Number(tab.dataset.slotTab));
 });
 
-scratchpadSlotsEl?.addEventListener("dblclick", (e) => {
-  const btn = e.target.closest("[data-scratchpad-slot]");
+notepadSlotsEl?.addEventListener("dblclick", (e) => {
+  const btn = e.target.closest("[data-notepad-slot]");
   if (!btn) return;
-  const idx = Number(btn.dataset.scratchpadSlot);
+  const idx = Number(btn.dataset.notepadSlot);
   if (!Number.isInteger(idx)) return;
-  scratchpadInlineRenameIdx = idx;
-  scratchpadRenameOriginalName = config.scratchpads[idx]?.name || `Note ${idx + 1}`;
-  renderScratchpad();
-  const input = scratchpadSlotsEl.querySelector(`[data-scratchpad-rename="${idx}"]`);
+  notepadInlineRenameIdx = idx;
+  notepadRenameOriginalName = config.notepads[idx]?.name || `Note ${idx + 1}`;
+  renderNotepad();
+  const input = notepadSlotsEl.querySelector(`[data-notepad-rename="${idx}"]`);
   if (input) {
     input.focus();
     input.select();
   }
 });
 
-function commitScratchpadRename(input) {
-  const idx = Number(input.dataset.scratchpadRename);
-  if (config.scratchpads[idx]) {
-    config.scratchpads[idx].name = input.value.trim() || `Note ${idx + 1}`;
+function commitNotepadRename(input) {
+  const idx = Number(input.dataset.notepadRename);
+  if (config.notepads[idx]) {
+    config.notepads[idx].name = input.value.trim() || `Note ${idx + 1}`;
     saveConfig();
   }
-  scratchpadInlineRenameIdx = -1;
-  scratchpadRenameOriginalName = "";
-  renderScratchpad();
+  notepadInlineRenameIdx = -1;
+  notepadRenameOriginalName = "";
+  renderNotepad();
 }
 
-scratchpadSlotsEl?.addEventListener("keydown", (e) => {
-  const input = e.target.closest("[data-scratchpad-rename]");
+notepadSlotsEl?.addEventListener("keydown", (e) => {
+  const input = e.target.closest("[data-notepad-rename]");
   if (!input) return;
   if (e.key === "Enter") {
     e.preventDefault();
-    commitScratchpadRename(input);
+    commitNotepadRename(input);
   } else if (e.key === "Escape") {
     e.preventDefault();
-    const idx = Number(input.dataset.scratchpadRename);
-    if (config.scratchpads[idx] && scratchpadRenameOriginalName) {
-      config.scratchpads[idx].name = scratchpadRenameOriginalName;
+    const idx = Number(input.dataset.notepadRename);
+    if (config.notepads[idx] && notepadRenameOriginalName) {
+      config.notepads[idx].name = notepadRenameOriginalName;
     }
-    scratchpadInlineRenameIdx = -1;
-    scratchpadRenameOriginalName = "";
-    renderScratchpad();
+    notepadInlineRenameIdx = -1;
+    notepadRenameOriginalName = "";
+    renderNotepad();
   }
 });
 
-scratchpadSlotsEl?.addEventListener("focusout", (e) => {
-  const input = e.target.closest("[data-scratchpad-rename]");
+notepadSlotsEl?.addEventListener("focusout", (e) => {
+  const input = e.target.closest("[data-notepad-rename]");
   if (!input) return;
-  if (scratchpadInlineRenameIdx !== -1) {
-    commitScratchpadRename(input);
+  if (notepadInlineRenameIdx !== -1) {
+    commitNotepadRename(input);
   }
 });
 
-scratchpadSlotsEl?.addEventListener(
+notepadSlotsEl?.addEventListener(
   "wheel",
   (e) => {
-    if (scratchpadSlotsEl.scrollWidth > scratchpadSlotsEl.clientWidth && e.deltaY !== 0) {
+    if (notepadSlotsEl.scrollWidth > notepadSlotsEl.clientWidth && e.deltaY !== 0) {
       e.preventDefault();
-      scratchpadSlotsEl.scrollLeft += e.deltaY;
+      notepadSlotsEl.scrollLeft += e.deltaY;
     }
   },
   { passive: false }
 );
 
-function getNextScratchpadName() {
-  const existing = new Set(config.scratchpads.map((s) => s.name.trim().toLowerCase()));
+function getNextNotepadName() {
+  const existing = new Set(config.notepads.map((s) => s.name.trim().toLowerCase()));
   let n = 1;
   while (existing.has(`note ${n}`)) n += 1;
   return `Note ${n}`;
 }
 
-scratchpadAddBtn?.addEventListener("click", () => {
-  ensureScratchpadSlots();
-  config.scratchpads.push({ name: getNextScratchpadName(), text: "" });
-  config.activeScratchpadSlot = config.scratchpads.length - 1;
+notepadAddBtn?.addEventListener("click", () => {
+  ensureNotepadSlots();
+  config.notepads.push({ name: getNextNotepadName(), text: "" });
+  config.activeNotepadSlot = config.notepads.length - 1;
   saveConfig();
-  renderScratchpad(true);
-  scratchpadInputEl?.focus();
+  renderNotepad(true);
+  notepadInputEl?.focus();
 });
 
-scratchpadInputEl?.addEventListener("input", () => {
-  ensureScratchpadSlots();
-  scratchpadCanUndoSnapshot = false;
-  config.scratchpads[config.activeScratchpadSlot].text = scratchpadInputEl.value;
-  if (config.activeScratchpadSlot === 0) config.scratchpad = scratchpadInputEl.value;
+notepadInputEl?.addEventListener("input", () => {
+  ensureNotepadSlots();
+  notepadCanUndoSnapshot = false;
+  config.notepads[config.activeNotepadSlot].text = notepadInputEl.value;
+  if (config.activeNotepadSlot === 0) config.notepad = notepadInputEl.value;
   saveConfig();
-  const activeTab = scratchpadSlotsEl?.querySelector(".slot-tab.active");
-  activeTab?.classList.toggle("has-content", Boolean(scratchpadInputEl.value.trim()));
+  const activeTab = notepadSlotsEl?.querySelector(".slot-tab.active");
+  activeTab?.classList.toggle("has-content", Boolean(notepadInputEl.value.trim()));
 });
 
-scratchpadCopyBtn?.addEventListener("click", async () => {
-  if (!scratchpadInputEl) return;
+notepadCopyBtn?.addEventListener("click", async () => {
+  if (!notepadInputEl) return;
   try {
-    await navigator.clipboard.writeText(scratchpadInputEl.value);
-    scratchpadCopyBtn.textContent = "COPIED";
+    await navigator.clipboard.writeText(notepadInputEl.value);
+    notepadCopyBtn.textContent = "COPIED";
     setTimeout(() => {
-      scratchpadCopyBtn.textContent = "COPY";
+      notepadCopyBtn.textContent = "COPY";
     }, 1200);
   } catch {
-    scratchpadInputEl.select();
+    notepadInputEl.select();
   }
 });
 
-scratchpadClearBtn?.addEventListener("click", () => {
-  if (!scratchpadInputEl) return;
-  ensureScratchpadSlots();
-  if (config.scratchpads[config.activeScratchpadSlot]?.text) {
-    pushScratchpadUndo();
+notepadClearBtn?.addEventListener("click", () => {
+  if (!notepadInputEl) return;
+  ensureNotepadSlots();
+  if (config.notepads[config.activeNotepadSlot]?.text) {
+    pushNotepadUndo();
   }
-  scratchpadInputEl.value = "";
-  config.scratchpads[config.activeScratchpadSlot].text = "";
-  if (config.activeScratchpadSlot === 0) config.scratchpad = "";
+  notepadInputEl.value = "";
+  config.notepads[config.activeNotepadSlot].text = "";
+  if (config.activeNotepadSlot === 0) config.notepad = "";
   saveConfig();
-  renderScratchpad();
-  scratchpadInputEl.focus();
+  renderNotepad();
+  notepadInputEl.focus();
 });
 
 document.addEventListener("keydown", (e) => {
   if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== "z") return;
   if (currentPage !== "home" || !settingsModal.classList.contains("hidden")) return;
-  if (!scratchpadCanUndoSnapshot || scratchpadUndoStack.length === 0) return;
+  if (!notepadCanUndoSnapshot || notepadUndoStack.length === 0) return;
 
   const activeEl = document.activeElement;
   const isOtherInput =
-    (activeEl?.tagName === "INPUT" || activeEl?.tagName === "TEXTAREA") && activeEl !== scratchpadInputEl;
+    (activeEl?.tagName === "INPUT" || activeEl?.tagName === "TEXTAREA") && activeEl !== notepadInputEl;
   if (isOtherInput) return;
 
   e.preventDefault();
-  undoScratchpadSnapshot();
+  undoNotepadSnapshot();
 });
 
 const checklistFormEl = document.getElementById("checklist-form");
