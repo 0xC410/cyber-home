@@ -1,0 +1,22 @@
+# Personal configuration (never commit)
+config.local.js
+*backup*.json
+cyber-home-*.json
+cyber-bento-*.json
+
+# Extension build packages & local extension manifest files
+*.zip
+*.xpi
+*.crx
+*.pem
+web-ext-artifacts/
+manifest.json
+background.js
+
+# OS / Editor / Dependencies
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.agents/
+node_modules/

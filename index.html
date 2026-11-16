@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SYS // HOME</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="home" data-mode="A" data-theme="green" data-font-size="md">
+  <div class="container">
+    <!-- Top Status Bar -->
+    <header class="topbar mono">
+      <div class="topbar-left">
+        <span class="status-badge" role="status" aria-live="polite">SYS // ONLINE</span>
+        <nav class="page-switcher" aria-label="Primary navigation">
+          <button class="page-btn active" data-page-target="home" type="button" aria-current="page">⌂ HOME</button>
+          <button class="page-btn" data-page-target="timer" id="nav-timer-btn" type="button">
+            <span>⏱ FOCUS TIMER</span>
+            <span id="nav-timer-badge" class="nav-timer-badge hidden"></span>
+          </button>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <a id="weather-display" class="weather-badge" href="https://www.google.com/search?q=weather" target="_blank" rel="noopener noreferrer" title="Click for full weather forecast">-- · --°C</a>
+        <div class="datetime-badge" aria-label="Date and time">
+          <span id="date-display" class="datetime-date">--/--/----</span>
+          <span class="datetime-sep" aria-hidden="true">·</span>
+          <span id="clock-display" class="datetime-clock accent-text">00:00:00</span>
+        </div>
+        <button id="open-settings-btn" class="icon-btn mono" type="button" title="Page settings" aria-label="Open settings">
+          ⚙ CONFIG
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <h1 class="sr-only">cyber-home Workspace</h1>
+
+      <!-- ==================== HOME PAGE VIEW ==================== -->
+      <div id="home-page-view" class="page-view">
+        <!-- Zen Mode ASCII Clock -->
+        <section id="zen-clock-wrap" class="zen-clock-wrap hidden" aria-label="Zen ASCII clock">
+          <pre id="zen-ascii-clock" class="zen-ascii-clock mono"></pre>
+          <div id="zen-date-sub" class="zen-date-sub mono"></div>
+        </section>
+
+        <!-- Search / Command Bar -->
+        <section class="panel panel-accent" id="command-panel" aria-labelledby="command-legend">
+          <h2 class="tui-legend mono" id="command-legend">[ 01. COMMAND / SEARCH ]</h2>
+          <form id="search-form" class="search-form" autocomplete="off">
+            <span class="search-prefix mono" aria-hidden="true">❯</span>
+            <input
+              id="search-input"
+              class="search-input"
+              type="text"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="command-suggestions"
+              placeholder="Search, 'gh <q>', 'cve <id>', '@bookmark', or ':command' (:help)..."
+              aria-label="Search the web, filter bookmarks, or run command"
+            />
+            <span class="kbd mono" aria-hidden="true">CTRL+K</span>
+          </form>
+          <div id="command-suggestions" class="command-suggestions mono hidden" role="listbox" aria-label="Command suggestions"></div>
+          <div id="command-feedback" class="command-feedback mono hidden" aria-live="polite"></div>
+        </section>
+
+        <!-- TUI Directory Stack -->
+        <section class="bento-view" id="bento-grid" aria-labelledby="bookmarks-legend">
+          <div class="links-stack">
+            <div class="panel" id="bookmarks-panel">
+              <h2 class="tui-legend mono" id="bookmarks-legend">[ 02. WORKSPACE DIRECTORY ]</h2>
+              <div class="panel-header-row panel-header-row-bookmarks">
+                <div class="tab-switcher mono" id="links-tab-switcher" role="tablist" aria-label="Bookmark categories">
+                  <button class="tab-btn active" data-links-tab="primary" type="button" role="tab" aria-selected="true">Bookmarks</button>
+                </div>
+                <div class="panel-header-actions">
+                  <form id="inline-add-category-form" class="inline-input-group hidden" autocomplete="off">
+                    <input id="inline-new-category-input" class="field-input mono" type="text" maxlength="18" autocomplete="off" placeholder="New category..." aria-label="New category name" required />
+                    <button class="btn-accent mono" type="submit">+ CATEGORY</button>
+                  </form>
+                  <button id="bookmarks-edit-btn" class="icon-btn mono panel-edit-btn" type="button" title="Edit bookmarks" aria-label="Edit bookmarks" aria-pressed="false">
+                    <svg class="edit-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 20h9"></path>
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    <span class="edit-btn-label hidden">DONE</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Bookmarks Grid & Inline Edit Mode -->
+              <div id="personal-links-view" role="tabpanel" aria-labelledby="bookmarks-legend">
+                <div id="links-grid" class="bookmarks-grid"></div>
+                <div id="links-edit-view" class="links-edit-view hidden">
+                  <form id="inline-add-link-form" class="add-link-form" autocomplete="off">
+                    <input id="inline-new-link-name" class="field-input mono" type="text" autocomplete="off" placeholder="Title (e.g. Hack The Box)" aria-label="Bookmark title" required />
+                    <input id="inline-new-link-url" class="field-input mono" type="text" inputmode="url" autocomplete="off" placeholder="https://..." aria-label="Bookmark URL" required />
+                    <button id="inline-add-link-btn" class="btn-accent mono" type="submit">+ ADD</button>
+                  </form>
+                  <div id="links-edit-list" class="manage-list manage-list-inline"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Scratchpad & Checklist Bento Row -->
+        <section class="bento-eval-grid" aria-label="Scratchpad and checklist">
+          <!-- Scratchpad -->
+          <div class="panel" id="scratchpad-panel" role="region" aria-labelledby="scratchpad-legend">
+            <h2 class="tui-legend mono" id="scratchpad-legend">[ 03. SCRATCHPAD ]</h2>
+            <div class="panel-header-row panel-header-row-compact">
+              <div class="scratchpad-tabs-wrap">
+                <div class="scratchpad-segmented mono" id="scratchpad-slots" role="tablist" aria-label="Scratchpad notes"></div>
+                <button id="scratchpad-add-btn" class="slot-add-btn mono" type="button" title="New quick note" aria-label="New quick note">+</button>
+              </div>
+              <div class="panel-header-actions">
+                <button id="scratchpad-copy-btn" class="icon-btn mono" type="button" title="Copy active note">COPY</button>
+                <button id="scratchpad-clear-btn" class="icon-btn mono" type="button" title="Clear active note">CLEAR</button>
+              </div>
+            </div>
+            <textarea
+              id="scratchpad-input"
+              class="scratchpad-textarea mono"
+              rows="6"
+              placeholder="Quick notes..."
+              aria-label="Quick scratchpad"
+            ></textarea>
+          </div>
+
+          <!-- Checklist -->
+          <div class="panel" id="checklist-panel" role="region" aria-labelledby="checklist-legend">
+            <h2 class="tui-legend mono" id="checklist-legend">[ 04. CHECKLIST ]</h2>
+            <div class="panel-header-row panel-header-row-compact">
+              <span class="preview-meta mono">Tasks</span>
+              <div class="panel-header-actions">
+                <button id="checklist-clear-done-btn" class="icon-btn mono hidden" type="button" title="Clear completed tasks">CLEAR DONE</button>
+                <span id="checklist-count" class="panel-count mono accent-text">[0/0]</span>
+              </div>
+            </div>
+            <form id="checklist-form" class="checklist-form" autocomplete="off">
+              <input
+                id="checklist-input"
+                class="field-input mono"
+                type="text"
+                maxlength="80"
+                autocomplete="off"
+                placeholder="Add task..."
+                aria-label="New checklist task"
+              />
+              <button class="btn-accent mono" type="submit">+ ADD</button>
+            </form>
+            <ul id="checklist-list" class="checklist-list mono"></ul>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================== DEDICATED FOCUS TIMER PAGE ==================== -->
+      <div id="timer-page-view" class="page-view hidden">
+        <section class="timer-page-shell" aria-labelledby="timer-legend">
+          <div class="panel panel-accent timer-focus-card">
+            <h2 class="tui-legend mono" id="timer-legend">[ FOCUS SESSION // TIMER &amp; STOPWATCH ]</h2>
+            <div class="panel-header-row">
+              <span id="timer-status-tag" class="mono accent-text" role="status">[READY]</span>
+              <div class="tab-switcher mono" role="tablist" aria-label="Timer mode">
+                <button class="tab-btn active" data-timer-mode="timer" type="button" role="tab" aria-selected="true">Countdown Timer</button>
+                <button class="tab-btn" data-timer-mode="stopwatch" type="button" role="tab" aria-selected="false">Stopwatch</button>
+              </div>
+            </div>
+
+            <div class="timer-display-wrap" id="timer-display-wrap">
+              <div id="timer-display" class="timer-display mono">45:00</div>
+              <div id="timer-subtext" class="timer-subtext mono muted-text">Dedicated study timer · distraction-free view</div>
+            </div>
+
+            <div id="timer-presets" class="timer-presets mono">
+              <button class="preset-btn" data-minutes="25" type="button" aria-pressed="false">25m</button>
+              <button class="preset-btn active" data-minutes="45" type="button" aria-pressed="true">45m</button>
+              <button class="preset-btn" data-minutes="60" type="button" aria-pressed="false">60m</button>
+              <button class="preset-btn" data-minutes="90" type="button" aria-pressed="false">90m</button>
+              <button class="preset-btn" data-minutes="120" type="button" aria-pressed="false">120m</button>
+              <div class="custom-min-wrap">
+                <input id="custom-minutes-input" class="custom-min-input mono" type="number" min="1" max="360" autocomplete="off" placeholder="min" aria-label="Custom minutes" />
+                <button id="set-custom-min-btn" class="preset-btn" type="button">SET</button>
+              </div>
+            </div>
+
+            <div class="timer-controls mono">
+              <button id="timer-toggle-btn" class="btn-accent mono" type="button">▶ START</button>
+              <button id="timer-reset-btn" class="btn-ghost mono" type="button">↺ RESET</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="hint-footer mono">
+      <span>Prefixes: <span class="accent-text">g</span> · <span class="accent-text">gh</span> · <span class="accent-text">cve</span> · <span class="accent-text">ht</span> · <span class="accent-text">crt</span> · <span class="accent-text">shodan</span> · <span class="accent-text">@</span> bookmarks · <span class="accent-text">:</span> commands</span>
+      <span>Shortcuts: <span class="accent-text">/</span> or <span class="accent-text">Ctrl+K</span> search · <span class="accent-text">↑↓</span> history · <span class="accent-text">1–9</span> open bookmark</span>
+    </footer>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal-panel">
+      <div class="modal-header mono">
+        <h2 id="settings-title">⚙ WORKSPACE CONFIGURATION</h2>
+        <button id="close-settings-btn" class="icon-btn mono" type="button" aria-label="Close settings">✕ CLOSE</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Section: Appearance -->
+        <section class="settings-section">
+          <h3 class="settings-heading mono">01. Typography &amp; Theme</h3>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <strong>Font Size Scale</strong>
+              <p>Scales all interface typography and cards proportionally.</p>
+            </div>
+            <div class="setting-control mono" id="font-size-options">
+              <button class="choice-btn" data-font="sm" type="button" aria-pressed="false">Compact (14px)</button>
+              <button class="choice-btn" data-font="md" type="button" aria-pressed="true">Default (16px)</button>
+              <button class="choice-btn" data-font="lg" type="button" aria-pressed="false">Large (18px)</button>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <strong>Accent Color Palette</strong>
+              <p>Sets the active phosphor highlight color across borders, badges, and controls.</p>
+            </div>
+            <div class="setting-control mono" id="theme-options">
+              <button class="choice-btn" data-theme-choice="green" type="button" aria-pressed="true">Phosphor Green</button>
+              <button class="choice-btn" data-theme-choice="amber" type="button" aria-pressed="false">Retro Amber</button>
+              <button class="choice-btn" data-theme-choice="cyan" type="button" aria-pressed="false">Cyber Cyan</button>
+              <button class="choice-btn" data-theme-choice="violet" type="button" aria-pressed="false">Neon Violet</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Weather -->
+        <section class="settings-section">
+          <h3 class="settings-heading mono">02. Weather Location</h3>
+          <div class="setting-row">
+            <div class="setting-info">
+              <strong>Region / City</strong>
+              <p>Uses browser geolocation by default and falls back to the default location if blocked. Or lock a custom city.</p>
+            </div>
+            <div class="setting-control setting-control-col">
+              <div class="inline-input-group">
+                <input id="weather-city-input" class="field-input mono" type="text" autocomplete="off" placeholder="e.g. London, Tokyo..." aria-label="Custom weather city" />
+                <button id="weather-city-save" class="btn-accent mono" type="button">SET CITY</button>
+                <button id="weather-auto-btn" class="btn-ghost mono" type="button">AUTO</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Backup -->
+        <section class="settings-section">
+          <h3 class="settings-heading mono">03. Backup &amp; Reset</h3>
+          <div class="setting-row">
+            <div class="setting-info">
+              <strong>Export or Import Configuration</strong>
+              <p>Download your settings and links as a JSON file or restore defaults.</p>
+            </div>
+            <div class="setting-control mono">
+              <button id="export-json-btn" class="btn-ghost mono" type="button">↓ EXPORT JSON</button>
+              <button id="import-json-btn" class="btn-ghost mono" type="button">↑ IMPORT JSON</button>
+              <input id="import-json-input" class="sr-only" type="file" accept="application/json" tabindex="-1" aria-hidden="true" />
+              <button id="reset-all-btn" class="btn-danger mono" type="button">RESET DEFAULTS</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.example.js"></script>
+  <script src="config.local.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
