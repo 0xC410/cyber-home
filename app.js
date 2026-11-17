@@ -204,7 +204,11 @@ function getCategoryById(id) {
 function setPage(page) {
   currentPage = page === "timer" ? "timer" : "home";
   document.body.dataset.page = currentPage;
-  window.history.replaceState(null, "", currentPage === "timer" ? "#timer" : "#");
+  try {
+    window.history.replaceState(null, "", currentPage === "timer" ? "#timer" : "#");
+  } catch {
+    // Ignore history restrictions in sandboxed/local contexts
+  }
 
   document.getElementById("home-page-view").classList.toggle("hidden", currentPage !== "home");
   document.getElementById("timer-page-view").classList.toggle("hidden", currentPage !== "timer");
@@ -633,10 +637,10 @@ function renderTimer() {
   }
 
   document.title = timerState.alarmActive
-    ? "[ALARM!] SYS // HOME"
+    ? "[ALARM!] HOME"
     : timerState.running
-      ? `[${formatted}] SYS // HOME`
-      : "SYS // HOME";
+      ? `[${formatted}] HOME`
+      : "HOME";
 }
 
 function stopTimerInterval() {
@@ -1655,6 +1659,43 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+window.addEventListener(
+  "keydown",
+  (e) => {
+    const activeTag = document.activeElement?.tagName;
+    const isTyping = activeTag === "INPUT" || activeTag === "TEXTAREA" || activeTag === "SELECT";
+    const isModalOpen = !settingsModal.classList.contains("hidden");
+    if (isTyping || isModalOpen) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    const key = String(e.key || "").toLowerCase();
+    const isZen = document.body.dataset.zen === "true";
+
+    if (key === "h" || e.code === "KeyH") {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isZen) setZenMode(false);
+      setPage("home");
+      return;
+    }
+
+    if (key === "t" || e.code === "KeyT") {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isZen) setZenMode(false);
+      setPage(currentPage === "home" ? "timer" : "home");
+      return;
+    }
+
+    if (key === "z" || e.code === "KeyZ") {
+      e.preventDefault();
+      e.stopPropagation();
+      setZenMode(!isZen);
+    }
+  },
+  { capture: true }
+);
+
 /* Tablist Arrow Navigation */
 document.addEventListener("keydown", (e) => {
   if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
@@ -2040,11 +2081,15 @@ checklistListEl?.addEventListener("click", (e) => {
 
 /* === Connectivity Easter Egg (SYS // ONLINE <-> SYS // OFFLINE) === */
 const statusBadgeEl = document.querySelector(".status-badge");
+const faviconEl = document.querySelector('link[rel="icon"]');
 
 function setConnectivityUI(isOnline) {
   document.body.dataset.online = isOnline ? "true" : "false";
   if (statusBadgeEl) {
     statusBadgeEl.textContent = isOnline ? "SYS // ONLINE" : "SYS // OFFLINE";
+  }
+  if (faviconEl) {
+    faviconEl.setAttribute("href", isOnline ? "favicon.svg" : "favicon-offline.svg");
   }
 }
 

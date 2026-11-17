@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SYS // HOME</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>HOME</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css?v=20261117-2" />
 </head>
 <body data-page="home" data-mode="A" data-theme="green" data-font-size="md">
   <div class="container">
@@ -177,7 +178,7 @@
             </div>
 
             <div id="timer-presets" class="timer-presets mono">
-              <button class="preset-btn" data-minutes="25" type="button" aria-pressed="false">25m</button>
+              <button class="preset-btn" data-minutes="30" type="button" aria-pressed="false">30m</button>
               <button class="preset-btn active" data-minutes="45" type="button" aria-pressed="true">45m</button>
               <button class="preset-btn" data-minutes="60" type="button" aria-pressed="false">60m</button>
               <button class="preset-btn" data-minutes="90" type="button" aria-pressed="false">90m</button>
@@ -197,9 +198,30 @@
       </div>
     </main>
 
-    <footer class="hint-footer mono">
-      <span>Prefixes: <span class="accent-text">g</span> · <span class="accent-text">gh</span> · <span class="accent-text">cve</span> · <span class="accent-text">ht</span> · <span class="accent-text">crt</span> · <span class="accent-text">shodan</span> · <span class="accent-text">@</span> bookmarks · <span class="accent-text">:</span> commands</span>
-      <span>Shortcuts: <span class="accent-text">/</span> or <span class="accent-text">Ctrl+K</span> search · <span class="accent-text">↑↓</span> history · <span class="accent-text">1–9</span> open bookmark</span>
+    <footer class="hint-footer mono" aria-label="Command prefixes and keyboard shortcuts">
+      <div class="footer-group">
+        <span class="footer-tag">PREFIX</span>
+        <span class="footer-chips">
+          <span class="footer-chip">g</span>
+          <span class="footer-chip">gh</span>
+          <span class="footer-chip">cve</span>
+          <span class="footer-chip">ht</span>
+          <span class="footer-chip">crt</span>
+          <span class="footer-chip">shodan</span>
+          <span class="footer-chip footer-chip-accent">@</span>
+          <span class="footer-chip footer-chip-accent">:</span>
+        </span>
+      </div>
+      <div class="footer-group">
+        <span class="footer-tag">KEYS</span>
+        <span class="footer-keybinds">
+          <span class="footer-bind"><kbd class="footer-kbd">/</kbd> search</span>
+          <span class="footer-bind"><kbd class="footer-kbd">H</kbd> home</span>
+          <span class="footer-bind"><kbd class="footer-kbd">T</kbd> timer</span>
+          <span class="footer-bind"><kbd class="footer-kbd">Z</kbd> zen</span>
+          <span class="footer-bind"><kbd class="footer-kbd">1–9</kbd> links</span>
+        </span>
+      </div>
     </footer>
   </div>
 
@@ -282,6 +304,6 @@
 
   <script src="config.example.js"></script>
   <script src="config.local.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=20261117-2"></script>
 </body>
 </html>
